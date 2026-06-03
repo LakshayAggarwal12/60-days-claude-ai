@@ -28,7 +28,7 @@ How would you launch a new AI-powered note-taking app with a limited budget?
 
 **Output image:**
 
-[Prompt 1 Output - No Role](image-1.png)
+![Prompt 1 Output - No Role](image-1.png)
 
 **My observation:**
 Good general advice, but felt like it could apply to *any* app. The answer was from the perspective of an advisor, not a practitioner. Lacked the raw urgency and prioritization instincts of someone who's actually done it.
