@@ -154,12 +154,7 @@ Strong Code + Visible Work + Consistent Networking = Job Offer
 
 ## 📸 Screenshots
 
-> *(Add screenshots of the generated PDF roadmap here)*
-> Tip: Export the PDF, screenshot each section, and drop images here using:
-> ```md
-> ![Roadmap Overview](day-04/career-roadmap-task4.png)
-> ```
-
+![Roadmap Overview](day-04/career-roadmap-task4.png)
 ---
 
 ## 🔗 Resources to Bookmark
