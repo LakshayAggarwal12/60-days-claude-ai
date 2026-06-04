@@ -154,7 +154,7 @@ Strong Code + Visible Work + Consistent Networking = Job Offer
 
 ## 📸 Screenshots
 
-![Roadmap Overview](career-roadmap-task4.png)
+![Roadmap Overview](day-4-img.png)
 ---
 
 ## 🔗 Resources to Bookmark
