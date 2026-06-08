@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personal Environmental Health Analyzer — India</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/tabler-icons.min.css">
+<style>
+  :root {
+    --bg: #ffffff; --bg2: #f5f5f4; --bg3: #eeede8;
+    --text: #1a1a18; --text2: #5f5e5a; --text3: #888780;
+    --border: rgba(0,0,0,0.12); --border2: rgba(0,0,0,0.22);
+    --info-bg: #e6f1fb; --info-text: #0c447c;
+    --warn-bg: #faeeda; --warn-text: #854f0b;
+    --danger-bg: #fcebeb; --danger-text: #a32d2d;
+    --success-bg: #eaf3de; --success-text: #3b6d11;
+    --radius: 8px; --radius-lg: 12px;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1e1e1c; --bg2: #28281f; --bg3: #111110;
+      --text: #e8e6df; --text2: #a8a69f; --text3: #666461;
+      --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.2);
+      --info-bg: #0c2840; --info-text: #85b7eb;
+      --warn-bg: #2e1e04; --warn-text: #fac775;
+      --danger-bg: #2a0f0f; --danger-text: #f09595;
+      --success-bg: #0f2006; --success-text: #97c459;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font); background: var(--bg3); color: var(--text); font-size: 14px; }
+  .topbar { background: var(--bg); border-bottom: 1px solid var(--border); padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; position: sticky; top: 0; z-index: 10; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 36px; height: 36px; border-radius: var(--radius); background: var(--info-bg); display: flex; align-items: center; justify-content: center; }
+  .logo-icon i { font-size: 20px; color: var(--info-text); }
+  .logo-title { font-size: 16px; font-weight: 500; color: var(--text); }
+  .logo-sub { font-size: 11px; color: var(--text3); }
+  .badge { font-size: 11px; padding: 3px 8px; border-radius: 5px; font-weight: 500; background: var(--success-bg); color: var(--success-text); }
+  .source { font-size: 11px; color: var(--text3); }
+  .filters { background: var(--bg); border-bottom: 1px solid var(--border); padding: 0.75rem 1.5rem; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .filter-group { display: flex; align-items: center; gap: 6px; }
+  .filter-label { font-size: 12px; color: var(--text2); }
+  select, input[type=range] { font-size: 12px; padding: 5px 8px; border: 1px solid var(--border2); border-radius: var(--radius); background: var(--bg); color: var(--text); cursor: pointer; }
+  .range-val { font-size: 12px; font-weight: 500; color: var(--text); min-width: 30px; }
+  .compare-btn { font-size: 12px; padding: 5px 12px; cursor: pointer; border-radius: var(--radius); border: 1px solid var(--border2); background: var(--bg); color: var(--text); }
+  .compare-btn.active { background: var(--info-bg); color: var(--info-text); border-color: #378ADD; }
+  .tab-bar { background: var(--bg); display: flex; gap: 4px; padding: 0 1.5rem; border-bottom: 1px solid var(--border); overflow-x: auto; }
+  .tab { font-size: 13px; padding: 10px 16px; cursor: pointer; color: var(--text2); border-bottom: 2px solid transparent; white-space: nowrap; }
+  .tab.active { color: var(--text); border-bottom-color: #378ADD; }
+  .tc { display: none; }
+  .tc.active { display: block; }
+  .section { max-width: 1100px; margin: 0 auto; padding: 1.25rem 1.5rem 0; }
+  .sec-label { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
+  .card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .card h3 { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 0.75rem; }
+  .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 1rem; }
+  .mc { background: var(--bg2); border-radius: var(--radius); padding: 0.85rem 1rem; }
+  .mc .ml { font-size: 11px; color: var(--text2); margin-bottom: 3px; }
+  .mc .mv { font-size: 22px; font-weight: 500; line-height: 1; }
+  .mc .ms { font-size: 11px; color: var(--text2); margin-top: 3px; }
+  .mc.info { background: var(--info-bg); } .mc.info .mv { color: var(--info-text); }
+  .mc.warn { background: var(--warn-bg); } .mc.warn .mv { color: var(--warn-text); }
+  .mc.danger { background: var(--danger-bg); } .mc.danger .mv { color: var(--danger-text); }
+  .mc.ok { background: var(--success-bg); } .mc.ok .mv { color: var(--success-text); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } .city-cards { grid-template-columns: 1fr 1fr !important; } }
+  .city-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 1rem; }
+  .city-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem; cursor: pointer; transition: border-color 0.15s; }
+  .city-card:hover { border-color: var(--border2); }
+  .city-card.selected { border: 2px solid #378ADD; }
+  .city-card.hidden { display: none; }
+  .city-name { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+  .aqi-big { font-size: 28px; font-weight: 500; }
+  .aqi-badge { font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 500; }
+  .city-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 8px; }
+  .city-stat { font-size: 11px; color: var(--text2); }
+  .city-stat span { font-weight: 500; color: var(--text); }
+  .bar-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .bar-label { font-size: 10px; color: var(--text2); width: 30px; text-align: right; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 6px; background: var(--bg2); border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; }
+  .bar-val { font-size: 11px; color: var(--text2); width: 24px; text-align: right; }
+  .exec-summary { background: var(--bg2); border-radius: var(--radius-lg); padding: 1rem; margin-bottom: 1rem; border-left: 3px solid #378ADD; }
+  .exec-title { font-size: 14px; font-weight: 500; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 6px; }
+  .exec-text { font-size: 13px; color: var(--text2); line-height: 1.7; }
+  .anomaly { background: var(--warn-bg); border-radius: var(--radius); padding: 0.75rem; margin-top: 0.75rem; font-size: 12px; color: var(--warn-text); line-height: 1.5; }
+  .legend-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; font-size: 11px; color: var(--text2); }
+  .ld { width: 10px; height: 10px; border-radius: 2px; display: inline-block; margin-right: 3px; vertical-align: middle; }
+  .action-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .action-item { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; padding: 10px; background: var(--bg2); border-radius: var(--radius); }
+  .action-item i { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .action-tag { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 3px; margin-right: 4px; font-weight: 500; }
+  .rb-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .rb-row:last-child { border-bottom: none; }
+  .rb-key { font-size: 12px; color: var(--text2); width: 160px; flex-shrink: 0; }
+  .rb-track { flex: 1; height: 6px; background: var(--bg2); border-radius: 3px; overflow: hidden; }
+  .rb-fill { height: 100%; border-radius: 3px; }
+  .rb-num { font-size: 12px; font-weight: 500; color: var(--text); width: 40px; text-align: right; }
+  .who-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .who-row:last-child { border-bottom: none; }
+  .trend-controls { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 0.75rem; }
+  .tcity-btn { font-size: 12px; padding: 4px 10px; border-radius: 5px; cursor: pointer; border: 1px solid var(--border2); background: var(--bg); color: var(--text2); }
+  .tcity-btn.on { background: var(--info-bg); color: var(--info-text); border-color: #378ADD; }
+  footer { max-width: 1100px; margin: 2rem auto 0; padding: 0 1.5rem 2rem; font-size: 11px; color: var(--text3); line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon"><i class="ti ti-leaf"></i></div>
+    <div>
+      <div class="logo-title">Personal Environmental Health Analyzer</div>
+      <div class="logo-sub">India — Air &amp; Water Quality Dashboard · June 2026</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <span class="badge"><i class="ti ti-refresh" style="font-size:10px"></i> Live data</span>
+    <span class="source">Sources: IQAir · CPCB · aqi.in · NITI Aayog</span>
+  </div>
+</div>
+
+<div class="filters">
+  <div class="filter-group"><span class="filter-label">City</span>
+    <select id="cityFilter" onchange="applyFilters()">
+      <option value="all">All cities</option>
+      <option value="Gurugram" selected>Gurugram</option>
+      <option value="Delhi">Delhi</option>
+      <option value="Mumbai">Mumbai</option>
+      <option value="Kolkata">Kolkata</option>
+      <option value="Hyderabad">Hyderabad</option>
+      <option value="Pune">Pune</option>
+      <option value="Chennai">Chennai</option>
+      <option value="Bangalore">Bangalore</option>
+    </select>
+  </div>
+  <div class="filter-group"><span class="filter-label">Max AQI</span>
+    <input type="range" min="0" max="200" value="200" step="1" id="aqiRange" oninput="document.getElementById('aqiRangeVal').textContent=this.value;applyFilters()">
+    <span class="range-val" id="aqiRangeVal">200</span>
+  </div>
+  <div class="filter-group"><span class="filter-label">Risk level</span>
+    <select id="riskFilter" onchange="applyFilters()">
+      <option value="all">All levels</option>
+      <option value="Good">Good</option>
+      <option value="Moderate">Moderate</option>
+      <option value="Unhealthy">Unhealthy</option>
+    </select>
+  </div>
+  <button class="compare-btn" id="compareBtn" onclick="toggleCompare()">
+    <i class="ti ti-arrows-diff"></i> Compare mode
+  </button>
+</div>
+
+<div class="tab-bar">
+  <div class="tab active" onclick="sw('overview',this)">Overview</div>
+  <div class="tab" onclick="sw('charts',this)">Charts</div>
+  <div class="tab" onclick="sw('cities',this)">City cards</div>
+  <div class="tab" onclick="sw('trends',this)">Seasonal trends</div>
+  <div class="tab" onclick="sw('who',this)">Pollutant benchmarks</div>
+  <div class="tab" onclick="sw('health',this)">Health scores</div>
+  <div class="tab" onclick="sw('report',this)">Report card</div>
+  <div class="tab" onclick="sw('calendar',this)">Health calendar</div>
+  <div class="tab" onclick="sw('recs',this)">Recommendations</div>
+</div>
+
+<!-- OVERVIEW -->
+<div id="t-overview" class="tc active">
+<div class="section">
+  <div class="sec-label">Key metrics — 8 cities analyzed · June 2026</div>
+  <div class="metrics-grid">
+    <div class="mc warn"><div class="ml">Your city (Gurugram)</div><div class="mv">73</div><div class="ms">AQI · Moderate</div></div>
+    <div class="mc danger"><div class="ml">Highest AQI</div><div class="mv">103</div><div class="ms">Kolkata · Unhealthy SG</div></div>
+    <div class="mc ok"><div class="ml">Lowest AQI</div><div class="mv">44</div><div class="ms">Bangalore · Good</div></div>
+    <div class="mc info"><div class="ml">Average AQI</div><div class="mv">70</div><div class="ms">8 cities · June 2026</div></div>
+    <div class="mc ok"><div class="ml">Cleanest city</div><div class="mv" style="font-size:16px;margin-top:2px">Bangalore</div><div class="ms">AQI 44 · PM2.5 12 µg/m³</div></div>
+    <div class="mc danger"><div class="ml">Most polluted</div><div class="mv" style="font-size:16px;margin-top:2px">Kolkata</div><div class="ms">AQI 103 · PM2.5 38 µg/m³</div></div>
+  </div>
+  <div class="exec-summary">
+    <div class="exec-title"><i class="ti ti-report-analytics" style="font-size:16px"></i> Executive summary</div>
+    <div class="exec-text">
+      Across 8 major Indian cities in June 2026, air quality ranges from <strong>Good (Bangalore, AQI 44)</strong> to <strong>Unhealthy for Sensitive Groups (Kolkata, AQI 103)</strong>. <strong>Gurugram</strong> — your current location — sits at AQI 73 (Moderate), with PM2.5 at ~28 µg/m³ and PM10 at ~62 µg/m³, both exceeding WHO guidelines. The NCR corridor (Delhi–Gurugram–Noida) continues to be a hotspot, with Gurugram logging 156 bad-air days in 2024–25 — making it India's 2nd most polluted city by that metric. Water quality is a parallel concern: Haryana's industrial waste and domestic sewage contaminate Yamuna tributaries, placing Gurugram's water score at 38/100. Southern cities (Bangalore, Chennai, Hyderabad) consistently outperform northern peers on both air and water metrics.
+    </div>
+    <div class="anomaly">
+      <i class="ti ti-alert-triangle" style="font-size:14px;vertical-align:-2px"></i>
+      <strong>Most surprising observation:</strong> Gurugram — despite its affluent, tech-sector profile — ranks as the 2nd most polluted city in India by bad-air days (156 days in 2024–25), worse than Delhi in this metric. Industrial corridors IMT Manesar and Udyog Vihar are key contributors alongside vehicle emissions.
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- CHARTS -->
+<div id="t-charts" class="tc">
+<div class="section">
+  <div class="card">
+    <h3>AQI comparison — all cities</h3>
+    <div class="legend-row">
+      <span><span class="ld" style="background:#639922"></span>Good (0–50)</span>
+      <span><span class="ld" style="background:#BA7517"></span>Moderate (51–100)</span>
+      <span><span class="ld" style="background:#E24B4A"></span>Unhealthy SG (101–150)</span>
+    </div>
+    <div style="position:relative;width:100%;height:280px"><canvas id="aqiChart" role="img" aria-label="AQI by city">AQI: Bangalore 44, Mumbai 56, Pune 59, Chennai 67, Ahmedabad 68, Gurugram 73, Delhi 73, Kolkata 103.</canvas></div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <h3>PM2.5 (µg/m³) vs WHO limit (5)</h3>
+      <div style="position:relative;width:100%;height:220px"><canvas id="pm25Chart" role="img" aria-label="PM2.5 levels vs WHO guideline">PM2.5: Bangalore 12, Mumbai 19, Pune 20, Chennai 22, Ahmedabad 23, Gurugram 28, Delhi 30, Kolkata 38.</canvas></div>
+    </div>
+    <div class="card">
+      <h3>PM10 (µg/m³) vs WHO limit (15)</h3>
+      <div style="position:relative;width:100%;height:220px"><canvas id="pm10Chart" role="img" aria-label="PM10 levels vs WHO guideline">PM10: Bangalore 28, Mumbai 38, Chennai 40, Pune 42, Ahmedabad 45, Gurugram 62, Delhi 68, Kolkata 75.</canvas></div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <h3>AQI distribution</h3>
+      <div class="legend-row">
+        <span><span class="ld" style="background:#639922"></span>Good 1</span>
+        <span><span class="ld" style="background:#BA7517"></span>Moderate 6</span>
+        <span><span class="ld" style="background:#E24B4A"></span>Unhealthy SG 1</span>
+      </div>
+      <div style="position:relative;width:100%;height:200px"><canvas id="distChart" role="img" aria-label="AQI category distribution">1 Good, 6 Moderate, 1 Unhealthy SG.</canvas></div>
+    </div>
+    <div class="card">
+      <h3>City ranking by environmental score</h3>
+      <div style="position:relative;width:100%;height:200px"><canvas id="rankChart" role="img" aria-label="City ranking by env score">Bangalore 72, Chennai 63, Pune 62, Mumbai 60, Hyderabad 56, Ahmedabad 54, Gurugram 40, Delhi 38.</canvas></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- CITIES -->
+<div id="t-cities" class="tc">
+<div class="section">
+  <div class="sec-label">City detail cards — click to select · compare mode for side-by-side</div>
+  <div class="city-cards" id="cityCards"></div>
+</div>
+</div>
+
+<!-- SEASONAL TRENDS -->
+<div id="t-trends" class="tc">
+<div class="section">
+  <div class="metrics-grid">
+    <div class="mc danger"><div class="ml">Peak month (Gurugram)</div><div class="mv">Nov</div><div class="ms">AQI avg ~220+</div></div>
+    <div class="mc ok"><div class="ml">Best month</div><div class="mv">Aug</div><div class="ms">AQI avg ~45 (monsoon)</div></div>
+    <div class="mc warn"><div class="ml">Current (Jun)</div><div class="mv">73</div><div class="ms">Pre-monsoon heat</div></div>
+    <div class="mc info"><div class="ml">Trend vs last year</div><div class="mv">-8%</div><div class="ms">Slight improvement</div></div>
+  </div>
+  <div class="card">
+    <h3>Monthly AQI trend — select cities to compare</h3>
+    <div class="trend-controls" id="trendBtns">
+      <button class="tcity-btn on" data-city="Gurugram" onclick="toggleCity(this)">Gurugram</button>
+      <button class="tcity-btn on" data-city="Delhi" onclick="toggleCity(this)">Delhi</button>
+      <button class="tcity-btn" data-city="Mumbai" onclick="toggleCity(this)">Mumbai</button>
+      <button class="tcity-btn" data-city="Bangalore" onclick="toggleCity(this)">Bangalore</button>
+    </div>
+    <div class="legend-row" id="trendLegend"></div>
+    <div style="position:relative;width:100%;height:280px"><canvas id="trendChart" role="img" aria-label="Monthly AQI trend by city">Gurugram peaks Nov ~220, lowest Aug ~45. Delhi peaks Nov ~235.</canvas></div>
+  </div>
+  <div class="card">
+    <h3>Year-over-year PM2.5 trend — Gurugram annual average</h3>
+    <div class="legend-row">
+      <span><span class="ld" style="background:#378ADD"></span>Annual avg PM2.5</span>
+      <span><span class="ld" style="background:#E24B4A"></span>WHO guideline (5 µg/m³)</span>
+    </div>
+    <div style="position:relative;width:100%;height:220px"><canvas id="yoyChart" role="img" aria-label="YoY PM2.5 Gurugram">2019: 92, 2020: 70, 2021: 76, 2022: 68, 2023: 55, 2024: 51, 2025: 48. WHO: 5.</canvas></div>
+  </div>
+</div>
+</div>
+
+<!-- WHO BENCHMARKS -->
+<div id="t-who" class="tc">
+<div class="section">
+  <div class="card">
+    <h3>Air pollutants — Gurugram vs WHO and NAAQS benchmarks</h3>
+    <div id="whoRows"></div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <h3>PM2.5 exceedance vs WHO (times over limit)</h3>
+      <div style="position:relative;width:100%;height:240px"><canvas id="excChart" role="img" aria-label="PM2.5 exceedance multiples">Kolkata 7.6x, Delhi 6x, Gurugram 5.6x, Chennai 4.4x, Ahmedabad 4.6x, Hyderabad 4x, Pune 4x, Mumbai 3.8x, Bangalore 2.4x.</canvas></div>
+    </div>
+    <div class="card">
+      <h3>Pollution sources — Gurugram</h3>
+      <div class="legend-row">
+        <span><span class="ld" style="background:#378ADD"></span>Industry 38%</span>
+        <span><span class="ld" style="background:#EF9F27"></span>Vehicles 28%</span>
+        <span><span class="ld" style="background:#E24B4A"></span>Construction 18%</span>
+        <span><span class="ld" style="background:#1D9E75"></span>Biomass 10%</span>
+        <span><span class="ld" style="background:#888780"></span>Other 6%</span>
+      </div>
+      <div style="position:relative;width:100%;height:200px"><canvas id="srcChart" role="img" aria-label="Pollution source breakdown Gurugram">Industry 38%, Vehicles 28%, Construction 18%, Biomass 10%, Other 6%.</canvas></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- HEALTH SCORES -->
+<div id="t-health" class="tc">
+<div class="section">
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-size:15px;font-weight:500">Gurugram — environmental health score</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px">Your current location · June 2026</div>
+      </div>
+      <div style="width:48px;height:48px;border-radius:50%;background:var(--warn-bg);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500;color:var(--warn-text)">C</div>
+    </div>
+    <div class="bar-row"><span class="bar-label">Air</span><div class="bar-track"><div class="bar-fill" style="width:38%;background:#EF9F27"></div></div><span class="bar-val">38</span></div>
+    <div class="bar-row"><span class="bar-label">Water</span><div class="bar-track"><div class="bar-fill" style="width:38%;background:#E24B4A"></div></div><span class="bar-val">38</span></div>
+    <div class="bar-row"><span class="bar-label">Overall</span><div class="bar-track"><div class="bar-fill" style="width:40%;background:#EF9F27"></div></div><span class="bar-val">40</span></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:1rem">
+      <div style="text-align:center;background:var(--bg2);border-radius:var(--radius);padding:.6rem"><div style="font-size:10px;color:var(--text2);margin-bottom:4px">Air quality</div><div style="font-size:20px;font-weight:500;color:var(--danger-text)">D</div></div>
+      <div style="text-align:center;background:var(--bg2);border-radius:var(--radius);padding:.6rem"><div style="font-size:10px;color:var(--text2);margin-bottom:4px">Water quality</div><div style="font-size:20px;font-weight:500;color:var(--danger-text)">D</div></div>
+      <div style="text-align:center;background:var(--bg2);border-radius:var(--radius);padding:.6rem"><div style="font-size:10px;color:var(--text2);margin-bottom:4px">Hair risk</div><div style="font-size:16px;font-weight:500;color:var(--danger-text)">High</div></div>
+      <div style="text-align:center;background:var(--bg2);border-radius:var(--radius);padding:.6rem"><div style="font-size:10px;color:var(--text2);margin-bottom:4px">Skin risk</div><div style="font-size:16px;font-weight:500;color:var(--danger-text)">High</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>City health score comparison</h3>
+    <div class="legend-row">
+      <span><span class="ld" style="background:#378ADD"></span>Air</span>
+      <span><span class="ld" style="background:#1D9E75"></span>Water</span>
+      <span><span class="ld" style="background:#7F77DD"></span>Overall</span>
+    </div>
+    <div style="position:relative;width:100%;height:300px"><canvas id="healthChart" role="img" aria-label="Health scores by city">Bangalore: air 68, water 75, overall 72. Chennai: 60, 65, 63. Delhi: 35, 40, 38. Gurugram: 38, 38, 40.</canvas></div>
+  </div>
+</div>
+</div>
+
+<!-- REPORT CARD -->
+<div id="t-report" class="tc">
+<div class="section">
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:1rem">
+      <div><div style="font-size:15px;font-weight:500">Gurugram — personal environmental report card</div><div style="font-size:11px;color:var(--text2);margin-top:2px">June 2026 · CPCB, IQAir, NITI Aayog, aqi.in</div></div>
+      <div style="width:42px;height:42px;border-radius:50%;background:var(--warn-bg);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:500;color:var(--warn-text)">C–</div>
+    </div>
+    <div class="rb-row"><span class="rb-key">Air quality score</span><div class="rb-track"><div class="rb-fill" style="width:38%;background:#EF9F27"></div></div><span class="rb-num">38 / 100</span></div>
+    <div class="rb-row"><span class="rb-key">Water quality score</span><div class="rb-track"><div class="rb-fill" style="width:38%;background:#E24B4A"></div></div><span class="rb-num">38 / 100</span></div>
+    <div class="rb-row"><span class="rb-key">PM2.5 compliance</span><div class="rb-track"><div class="rb-fill" style="width:14%;background:#E24B4A"></div></div><span class="rb-num">14%</span></div>
+    <div class="rb-row"><span class="rb-key">PM10 compliance</span><div class="rb-track"><div class="rb-fill" style="width:27%;background:#EF9F27"></div></div><span class="rb-num">27%</span></div>
+    <div class="rb-row"><span class="rb-key">Clean-air days 2024–25</span><div class="rb-track"><div class="rb-fill" style="width:57%;background:#EF9F27"></div></div><span class="rb-num">57%</span></div>
+    <div class="rb-row"><span class="rb-key">Groundwater safety</span><div class="rb-track"><div class="rb-fill" style="width:35%;background:#E24B4A"></div></div><span class="rb-num">35%</span></div>
+    <div class="rb-row"><span class="rb-key">Hair health risk</span><div class="rb-track"><div class="rb-fill" style="width:78%;background:#E24B4A"></div></div><span class="rb-num" style="color:var(--danger-text)">High</span></div>
+    <div class="rb-row"><span class="rb-key">Skin oxidative stress</span><div class="rb-track"><div class="rb-fill" style="width:75%;background:#E24B4A"></div></div><span class="rb-num" style="color:var(--danger-text)">High</span></div>
+    <div class="rb-row"><span class="rb-key">Overall env score</span><div class="rb-track"><div class="rb-fill" style="width:40%;background:#EF9F27"></div></div><span class="rb-num">40 / 100</span></div>
+  </div>
+</div>
+</div>
+
+<!-- HEALTH CALENDAR -->
+<div id="t-calendar" class="tc">
+<div class="section">
+  <div class="card">
+    <h3>Annual AQI risk calendar — Gurugram (5-year historical averages)</h3>
+    <div id="calGrid" style="display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin-bottom:.75rem"></div>
+    <div class="legend-row">
+      <span><span class="ld" style="background:#639922"></span>Good</span>
+      <span><span class="ld" style="background:#BA7517"></span>Moderate</span>
+      <span><span class="ld" style="background:#E24B4A"></span>Unhealthy SG</span>
+      <span><span class="ld" style="background:#A32D2D"></span>Unhealthy</span>
+      <span><span class="ld" style="background:#501313"></span>Very unhealthy</span>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <h3>Winter (Nov–Feb) — peak pollution</h3>
+      <p style="font-size:12px;color:var(--text2);line-height:1.6">Peak pollution season. Wear N95 daily. Keep air purifiers running 24/7. Avoid morning outdoor exercise — wait until AQI dips after noon. Consider work-from-home on smog days (AQI 200+).</p>
+    </div>
+    <div class="card">
+      <h3>Monsoon (Jul–Sep) — best window</h3>
+      <p style="font-size:12px;color:var(--text2);line-height:1.6">Best air quality of the year. Exercise outdoors, air out rooms, reduce purifier use. Watch for waterborne disease risk from contaminated rainwater runoff mixing with urban sewage.</p>
+    </div>
+    <div class="card">
+      <h3>Summer (Mar–May) — dust spikes</h3>
+      <p style="font-size:12px;color:var(--text2);line-height:1.6">Construction dust and heat-driven PM10 spikes. Hydrate well, use SPF 50+ sunscreen daily, antioxidant serums. Avoid midday outdoor exposure (11 AM–4 PM).</p>
+    </div>
+    <div class="card">
+      <h3>Post-monsoon (Oct) — rapid decline</h3>
+      <p style="font-size:12px;color:var(--text2);line-height:1.6">AQI can jump 50→200+ in days as stubble burning starts in Punjab/Haryana. Prepare air purifiers, stock N95 masks, seal window gaps before October 1st.</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- RECOMMENDATIONS -->
+<div id="t-recs" class="tc">
+<div class="section">
+  <ul class="action-list">
+    <li class="action-item"><i class="ti ti-wind" style="color:var(--danger-text)"></i><div><span class="action-tag" style="background:var(--danger-bg);color:var(--danger-text)">Critical</span><strong>Install HEPA air purifier</strong> — HEPA H13 reduces indoor PM2.5 by up to 85%. Choose CADR ≥ 300 m³/hr for a 200 sq ft room. Run continuously during winter months.</div></li>
+    <li class="action-item"><i class="ti ti-droplet-half-2" style="color:var(--danger-text)"></i><div><span class="action-tag" style="background:var(--danger-bg);color:var(--danger-text)">Critical</span><strong>RO+UV water purifier</strong> — Gurugram groundwater contains nitrates, heavy metals, and coliform bacteria from Yamuna industrial discharge. Boiling alone is insufficient for chemical contaminants.</div></li>
+    <li class="action-item"><i class="ti ti-mask" style="color:var(--warn-text)"></i><div><span class="action-tag" style="background:var(--warn-bg);color:var(--warn-text)">High</span><strong>N95 mask outdoors (Oct–Feb)</strong> — pollution surges 3–5× during winter. N95-rated masks filter 95% of PM2.5. Replace every 2–3 days of heavy use.</div></li>
+    <li class="action-item"><i class="ti ti-bell" style="color:var(--warn-text)"></i><div><span class="action-tag" style="background:var(--warn-bg);color:var(--warn-text)">High</span><strong>Set up AQI alerts</strong> — CPCB Sameer app or IQAir. Set threshold at AQI 100 (moderate action) and AQI 150 (restrict outdoor activity).</div></li>
+    <li class="action-item"><i class="ti ti-face-id" style="color:var(--info-text)"></i><div><span class="action-tag" style="background:var(--info-bg);color:var(--info-text)">Moderate</span><strong>Antioxidant skincare</strong> — PM2.5 penetrates pores and generates free radicals. AM: Vitamin C serum + SPF 50. PM: double cleanse + Niacinamide to repair barrier damage.</div></li>
+    <li class="action-item"><i class="ti ti-scissors" style="color:var(--info-text)"></i><div><span class="action-tag" style="background:var(--info-bg);color:var(--info-text)">Moderate</span><strong>Hair protection</strong> — Gurugram's hard, contaminated water accelerates thinning. Use filtered water for hair rinse, weekly clarifying shampoo, leave-in conditioner as pollution barrier.</div></li>
+    <li class="action-item"><i class="ti ti-salad" style="color:var(--success-text)"></i><div><span class="action-tag" style="background:var(--success-bg);color:var(--success-text)">Supportive</span><strong>Anti-pollution diet</strong> — turmeric (curcumin), amla, green tea, omega-3s (walnuts, flaxseed) neutralize PM2.5-induced oxidative stress and support lung lining integrity.</div></li>
+    <li class="action-item"><i class="ti ti-plant" style="color:var(--success-text)"></i><div><span class="action-tag" style="background:var(--success-bg);color:var(--success-text)">Supportive</span><strong>Indoor plants</strong> — snake plants, spider plants, peace lilies reduce VOCs. Complement (not replace) air purifiers in low-traffic spaces like bedrooms and offices.</div></li>
+  </ul>
+</div>
+</div>
+
+<footer>
+  Data sources: IQAir 2025–26 reports, CPCB NCAP 2024–25 Lok Sabha presentation, aqi.in live data (June 2026), IndiaDataMap 2025 water quality rankings, NITI Aayog Composite Water Management Index. Health recommendations follow WHO air quality guidelines and Indian NAAQS standards. All AQI values are US EPA standard unless noted. This tool is for awareness purposes only — consult a physician for personalized medical advice. Generated June 2026.
+</footer>
+
+<script>
+const CITIES=[
+  {name:'Gurugram',aqi:73,pm25:28,pm10:62,cat:'Moderate',airScore:38,waterScore:38,envScore:40,airGrade:'D',waterGrade:'D',hairRisk:'High',skinRisk:'High',state:'Haryana'},
+  {name:'Delhi',aqi:73,pm25:30,pm10:68,cat:'Moderate',airScore:35,waterScore:40,envScore:38,airGrade:'D',waterGrade:'D',hairRisk:'High',skinRisk:'High',state:'Delhi'},
+  {name:'Kolkata',aqi:103,pm25:38,pm10:75,cat:'Unhealthy',airScore:32,waterScore:48,envScore:42,airGrade:'F',waterGrade:'C',hairRisk:'Very High',skinRisk:'Very High',state:'West Bengal'},
+  {name:'Hyderabad',aqi:91,pm25:30,pm10:58,cat:'Moderate',airScore:50,waterScore:62,envScore:56,airGrade:'C',waterGrade:'C',hairRisk:'Moderate',skinRisk:'Moderate',state:'Telangana'},
+  {name:'Mumbai',aqi:56,pm25:19,pm10:38,cat:'Moderate',airScore:55,waterScore:65,envScore:60,airGrade:'C',waterGrade:'C',hairRisk:'Moderate',skinRisk:'Moderate',state:'Maharashtra'},
+  {name:'Pune',aqi:59,pm25:20,pm10:42,cat:'Moderate',airScore:62,waterScore:62,envScore:62,airGrade:'C',waterGrade:'C',hairRisk:'Moderate',skinRisk:'Moderate',state:'Maharashtra'},
+  {name:'Chennai',aqi:67,pm25:22,pm10:40,cat:'Moderate',airScore:60,waterScore:65,envScore:63,airGrade:'C',waterGrade:'B',hairRisk:'Low',skinRisk:'Low',state:'Tamil Nadu'},
+  {name:'Bangalore',aqi:44,pm25:12,pm10:28,cat:'Good',airScore:68,waterScore:75,envScore:72,airGrade:'B',waterGrade:'A',hairRisk:'Low',skinRisk:'Low',state:'Karnataka'},
+  {name:'Ahmedabad',aqi:68,pm25:23,pm10:45,cat:'Moderate',airScore:48,waterScore:60,envScore:54,airGrade:'C',waterGrade:'C',hairRisk:'Moderate',skinRisk:'Moderate',state:'Gujarat'},
+];
+function aqiColor(v){return v<=50?'#639922':v<=100?'#BA7517':v<=150?'#E24B4A':'#791F1F';}
+function scoreColor(v){return v>=65?'#639922':v>=50?'#BA7517':'#E24B4A';}
+function catStyle(c){return c==='Good'?'background:#EAF3DE;color:#3B6D11':c==='Unhealthy'?'background:#FCEBEB;color:#A32D2D':'background:#FAEEDA;color:#854F0B';}
+
+let compareMode=false;
+let selectedCities=new Set(['Gurugram']);
+
+function toggleCompare(){compareMode=!compareMode;document.getElementById('compareBtn').classList.toggle('active',compareMode);renderCards();}
+function sw(id,el){document.querySelectorAll('.tc').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById('t-'+id).classList.add('active');el.classList.add('active');}
+function applyFilters(){
+  const cf=document.getElementById('cityFilter').value;
+  const ma=parseInt(document.getElementById('aqiRange').value);
+  const rf=document.getElementById('riskFilter').value;
+  document.querySelectorAll('.city-card').forEach(c=>{
+    const city=CITIES.find(x=>x.name===c.dataset.name);
+    let show=true;
+    if(cf!=='all'&&c.dataset.name!==cf)show=false;
+    if(city.aqi>ma)show=false;
+    if(rf!=='all'){if(rf==='Unhealthy'&&city.aqi<=100)show=false;if(rf==='Good'&&city.aqi>50)show=false;if(rf==='Moderate'&&(city.aqi<=50||city.aqi>100))show=false;}
+    c.classList.toggle('hidden',!show);
+  });
+}
+function renderCards(){
+  const con=document.getElementById('cityCards');con.innerHTML='';
+  CITIES.forEach(city=>{
+    const sel=selectedCities.has(city.name);
+    const d=document.createElement('div');d.className='city-card'+(sel?' selected':'');d.dataset.name=city.name;
+    d.onclick=()=>{if(compareMode){if(selectedCities.has(city.name)&&selectedCities.size>1)selectedCities.delete(city.name);else selectedCities.add(city.name);}else{selectedCities=new Set([city.name]);}renderCards();};
+    d.innerHTML=`<div class="city-name">${city.name} <span style="font-size:11px;color:var(--text2);font-weight:400">${city.state}</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span class="aqi-big" style="color:${aqiColor(city.aqi)}">${city.aqi}</span><span class="aqi-badge" style="${catStyle(city.cat)}">${city.cat}</span></div>
+    <div class="city-stats"><div class="city-stat">PM2.5 <span>${city.pm25} µg/m³</span></div><div class="city-stat">PM10 <span>${city.pm10} µg/m³</span></div><div class="city-stat">Air <span>${city.airGrade}</span></div><div class="city-stat">Water <span>${city.waterGrade}</span></div><div class="city-stat">Hair <span>${city.hairRisk}</span></div><div class="city-stat">Skin <span>${city.skinRisk}</span></div></div>
+    <div class="bar-row"><span class="bar-label">Env</span><div class="bar-track"><div class="bar-fill" style="width:${city.envScore}%;background:${scoreColor(city.envScore)}"></div></div><span class="bar-val">${city.envScore}</span></div>`;
+    con.appendChild(d);
+  });
+}
+
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const TREND={Gurugram:{color:'#378ADD',data:[140,130,100,85,80,73,48,45,52,110,220,190]},Delhi:{color:'#E24B4A',data:[155,145,110,90,85,78,55,52,60,120,235,205]},Mumbai:{color:'#1D9E75',data:[75,70,65,60,58,55,45,42,48,65,80,78]},Bangalore:{color:'#7F77DD',data:[55,50,48,45,42,44,35,32,36,48,58,56]}};
+let activeCities=new Set(['Gurugram','Delhi']);
+let trendChart=null;
+
+function buildTrendLegend(){
+  const leg=document.getElementById('trendLegend');leg.innerHTML='';
+  activeCities.forEach(c=>{leg.innerHTML+=`<span><span class="ld" style="background:${TREND[c].color}"></span>${c}</span>`;});
+}
+function buildTrend(){
+  if(trendChart)trendChart.destroy();
+  trendChart=new Chart(document.getElementById('trendChart'),{type:'line',data:{labels:MONTHS,datasets:[...activeCities].map(c=>({label:c,data:TREND[c].data,borderColor:TREND[c].color,backgroundColor:'transparent',borderWidth:2,pointRadius:3,pointBackgroundColor:TREND[c].color,tension:0.3}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:260,ticks:{font:{size:11}}},x:{ticks:{font:{size:11},autoSkip:false,maxRotation:0}}}}});
+  buildTrendLegend();
+}
+function toggleCity(btn){const c=btn.dataset.city;if(activeCities.has(c)){if(activeCities.size>1){activeCities.delete(c);btn.classList.remove('on');}}else{activeCities.add(c);btn.classList.add('on');}buildTrend();}
+
+const CAL_COLOR={Jan:'#A32D2D',Feb:'#BA7517',Mar:'#BA7517',Apr:'#BA7517',May:'#BA7517',Jun:'#BA7517',Jul:'#639922',Aug:'#639922',Sep:'#BA7517',Oct:'#E24B4A',Nov:'#501313',Dec:'#A32D2D'};
+const CAL_AQI={Jan:140,Feb:130,Mar:100,Apr:85,May:80,Jun:73,Jul:48,Aug:45,Sep:52,Oct:110,Nov:220,Dec:190};
+const calGrid=document.getElementById('calGrid');
+MONTHS.forEach(m=>{
+  const light=['Jul','Aug'].includes(m);
+  calGrid.innerHTML+=`<div style="background:${CAL_COLOR[m]};border-radius:4px;padding:6px 3px;text-align:center${m==='Jun'?';outline:2px solid rgba(0,0,0,.3)':''}"><div style="font-size:9px;font-weight:500;color:${light?'#27500A':'#F7C1C1'}">${m}</div><div style="font-size:10px;font-weight:500;color:${light?'#173404':'#F09595'};margin-top:2px">${CAL_AQI[m]}</div></div>`;
+});
+
+const WHO_DATA=[{pol:'PM2.5',unit:'µg/m³',city:28,who:5,naaqs:40,max:100},{pol:'PM10',unit:'µg/m³',city:62,who:15,naaqs:100,max:130},{pol:'NO₂',unit:'µg/m³',city:38,who:10,naaqs:80,max:100},{pol:'SO₂',unit:'µg/m³',city:18,who:40,naaqs:80,max:100},{pol:'O₃',unit:'µg/m³',city:52,who:60,naaqs:100,max:120},{pol:'CO',unit:'mg/m³',city:1.8,who:4,naaqs:4,max:5}];
+const whoC=document.getElementById('whoRows');
+WHO_DATA.forEach(d=>{
+  const p=Math.round((d.city/d.max)*100);
+  const col=d.city>d.who?(d.city>d.naaqs?'#E24B4A':'#EF9F27'):'#639922';
+  whoC.innerHTML+=`<div class="who-row"><span style="font-size:13px;width:80px;flex-shrink:0">${d.pol}</span><div style="flex:1;background:var(--bg2);border-radius:3px;height:8px;overflow:hidden"><div style="width:${p}%;height:100%;background:${col};border-radius:3px"></div></div><span style="font-size:11px;color:var(--text2);width:160px;text-align:right;flex-shrink:0">City: ${d.city} | WHO: ${d.who} ${d.unit}</span></div>`;
+});
+
+const labels=CITIES.map(c=>c.name);
+const aqis=CITIES.map(c=>c.aqi);
+new Chart(document.getElementById('aqiChart'),{type:'bar',data:{labels,datasets:[{label:'AQI',data:aqis,backgroundColor:CITIES.map(c=>aqiColor(c.aqi)),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:150,ticks:{font:{size:11}}},x:{ticks:{font:{size:11},autoSkip:false,maxRotation:30}}}}});
+new Chart(document.getElementById('pm25Chart'),{type:'bar',data:{labels,datasets:[{label:'PM2.5',data:CITIES.map(c=>c.pm25),backgroundColor:'#378ADD',borderRadius:4},{label:'WHO',data:Array(9).fill(5),type:'line',borderColor:'#E24B4A',borderDash:[4,3],pointRadius:0,borderWidth:1.5,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{font:{size:10}}},x:{ticks:{font:{size:10},autoSkip:false,maxRotation:40}}}}});
+new Chart(document.getElementById('pm10Chart'),{type:'bar',data:{labels,datasets:[{label:'PM10',data:CITIES.map(c=>c.pm10),backgroundColor:'#7F77DD',borderRadius:4},{label:'WHO',data:Array(9).fill(15),type:'line',borderColor:'#E24B4A',borderDash:[4,3],pointRadius:0,borderWidth:1.5,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{font:{size:10}}},x:{ticks:{font:{size:10},autoSkip:false,maxRotation:40}}}}});
+new Chart(document.getElementById('distChart'),{type:'doughnut',data:{labels:['Good','Moderate','Unhealthy SG'],datasets:[{data:[1,6,1],backgroundColor:['#639922','#BA7517','#E24B4A'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11},boxWidth:12}}}}});
+const sorted=[...CITIES].sort((a,b)=>b.envScore-a.envScore);
+new Chart(document.getElementById('rankChart'),{type:'bar',data:{labels:sorted.map(c=>c.name),datasets:[{label:'Score',data:sorted.map(c=>c.envScore),backgroundColor:sorted.map(c=>scoreColor(c.envScore)),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,max:100,ticks:{font:{size:10}}},y:{ticks:{font:{size:10}}}}}});
+new Chart(document.getElementById('healthChart'),{type:'bar',data:{labels,datasets:[{label:'Air',data:CITIES.map(c=>c.airScore),backgroundColor:'#378ADD',borderRadius:3},{label:'Water',data:CITIES.map(c=>c.waterScore),backgroundColor:'#1D9E75',borderRadius:3},{label:'Overall',data:CITIES.map(c=>c.envScore),backgroundColor:'#7F77DD',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12}}},scales:{y:{beginAtZero:true,max:100,ticks:{font:{size:11}}},x:{ticks:{font:{size:11},autoSkip:false,maxRotation:30}}}}});
+new Chart(document.getElementById('yoyChart'),{type:'bar',data:{labels:['2019','2020','2021','2022','2023','2024','2025'],datasets:[{label:'PM2.5',data:[92,70,76,68,55,51,48],backgroundColor:'#378ADD',borderRadius:4},{label:'WHO',data:[5,5,5,5,5,5,5],type:'line',borderColor:'#E24B4A',borderDash:[4,3],pointRadius:0,borderWidth:1.5,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:100,ticks:{font:{size:11}}},x:{ticks:{font:{size:11}}}}}});
+const c9=['Kolkata','Delhi','Gurugram','Ahmedabad','Chennai','Pune','Mumbai','Hyderabad','Bangalore'];
+const e9=[7.6,6,5.6,4.6,4.4,4,3.8,4,2.4];
+new Chart(document.getElementById('excChart'),{type:'bar',data:{labels:c9,datasets:[{label:'× WHO limit',data:e9,backgroundColor:e9.map(v=>v>5?'#E24B4A':v>3?'#EF9F27':'#639922'),borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw}× WHO limit`}}},scales:{x:{beginAtZero:true,max:9,ticks:{font:{size:10}}},y:{ticks:{font:{size:10}}}}}});
+new Chart(document.getElementById('srcChart'),{type:'doughnut',data:{labels:['Industry','Vehicles','Construction','Biomass','Other'],datasets:[{data:[38,28,18,10,6],backgroundColor:['#378ADD','#EF9F27','#E24B4A','#1D9E75','#888780'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+
+renderCards();
+buildTrend();
+</script>
+</body>
+</html>
