@@ -41,29 +41,30 @@ No frameworks, no build step — just one `.html` file that runs entirely client
 
 ## Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
-│                     index.html (single file)              │
+│                     index.html (single file)            │
 ├─────────────────────────────────────────────────────────┤
-│  CAMERA SCREEN                                             │
-│   getUserMedia() → <video> live preview (mirrored)         │
-│   Take Photo → center-crop to square → <canvas> dataURL    │
+│  CAMERA SCREEN                                          │
+│   getUserMedia() → <video> live preview (mirrored)      │
+│   Take Photo → center-crop to square → <canvas> dataURL │
 ├─────────────────────────────────────────────────────────┤
-│  DIFFICULTY SCREEN                                          │
-│   thumbnail preview + 3×3 / 4×4 / 5×5 selector              │
+│  DIFFICULTY SCREEN                                      │
+│   thumbnail preview + 3×3 / 4×4 / 5×5 selector          │
 ├─────────────────────────────────────────────────────────┤
-│  GAME SCREEN                                                │
-│   boardState[] (position → pieceId)                         │
-│     ├─ buildBoardState() → Fisher–Yates shuffle             │
-│     ├─ renderBoard() → CSS grid tiles, bg-position per piece│
-│     ├─ Mouse: HTML5 dragstart/dragover/drop                 │
-│     ├─ Touch: touchstart/move/end + ghost element            │
-│     └─ swapPieces() → re-render → checks win condition       │
-│   Timer: setInterval(100ms) → mm:ss.t display                │
+│  GAME SCREEN                                            │
+│   boardState[] (position → pieceId)                     │
+│     ├─ buildBoardState() → Fisher–Yates shuffle         │
+│     ├─ renderBoard() → CSS grid tiles, bg-position per  | 
+|     |  piece                                            | 
+│     ├─ Mouse: HTML5 dragstart/dragover/drop             │
+│     ├─ Touch: touchstart/move/end + ghost element       │
+│     └─ swapPieces() → re-render → checks win condition  │
+│   Timer: setInterval(100ms) → mm:ss.t display           │
 ├─────────────────────────────────────────────────────────┤
-│  WIN OVERLAY                                                 │
-│   stopTimer() → saveScore() → localStorage (top 5)           │
-│   renderLeaderboard()                                        │
+│  WIN OVERLAY                                            │
+│   stopTimer() → saveScore() → localStorage (top 5)      │
+│   renderLeaderboard()                                   │
 └─────────────────────────────────────────────────────────┘
 ```
 
