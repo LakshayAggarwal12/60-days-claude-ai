@@ -228,30 +228,13 @@ Day 23 Blueprint (Source of Truth)
 
 ## 📸 Screenshots
 
-```
-_screenshots/
-├── day24_01_cover_toc.png                # Navy cover + 12-section TOC
-├── day24_02_exec_summary.png             # KPI cards + assumptions table
-├── day24_03_business_reality_check.png   # 6-question deep-dive
-├── day24_04_bmc.png                      # 9-block business model canvas
-├── day24_05_revenue_pricing.png          # 4-tier pricing + 3-year bar chart
-├── day24_06_gtm_cac.png                  # 5-phase GTM + funnel + CAC table
-├── day24_07_moat_swot.png                # 4-moat circle map + Reverse SWOT
-├── day24_08_pitch_scorecard.png          # One-liner + pitch + score ring gauges
-├── day24_09_visual_dashboard.png         # Full multi-panel strategy infographic
-└── day24_10_action_verdict.png           # Founder action sheet + sustainability verdict
-```
-
-![Cover & TOC](_screenshots/day24_01_cover_toc.png)
-![Executive Summary](_screenshots/day24_02_exec_summary.png)
-![Business Reality Check](_screenshots/day24_03_business_reality_check.png)
-![Business Model Canvas](_screenshots/day24_04_bmc.png)
-![Revenue & Pricing](_screenshots/day24_05_revenue_pricing.png)
-![GTM & CAC](_screenshots/day24_06_gtm_cac.png)
-![Moat & SWOT](_screenshots/day24_07_moat_swot.png)
-![Pitch & Scorecard](_screenshots/day24_08_pitch_scorecard.png)
-![Visual Dashboard](_screenshots/day24_09_visual_dashboard.png)
-![Action Sheet & Verdict](_screenshots/day24_10_action_verdict.png)
+![TOC](./screenshots/01_cover_toc.png)
+![Executive Summary](./screenshots/02_exec_summary.png)
+![Business Reality Check](./screenshots/03_business_reality_check.png)
+![Revenue & Pricing](./screenshots/04_revenue_pricing.png)
+![CAC](./screenshots/05_gtm_cac.png)
+![Moat & SWOT](./screenshots/06_moat_swot.png)
+![Action Sheet & Verdict](./screenshots/07_action_verdict.png)
 
 ---
 
