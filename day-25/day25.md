@@ -1,4 +1,4 @@
-# Day 24 — AI Shark Tank Simulator 🦈
+# Day 25 — AI Shark Tank Simulator 🦈
 
 ## What We Built
 
@@ -215,9 +215,9 @@ el.textContent = Math.round(from + (to - from) * ease);
 ## File Structure
 
 ```
-day24/
+day25/
 ├── ai_shark_tank_simulator.html   ← complete application (single file)
-└── day24.md                       ← this document
+└── day25.md                       ← this document
 ```
 
 Internal JS module structure (all in one `<script>` tag):
@@ -292,5 +292,5 @@ Return ONLY valid JSON:
 
 ---
 
-*Day 24 of 60 — ABTalksOnAI Claude Challenge*
+*Day 25 of 60 — ABTalksOnAI Claude Challenge*
 *Built by Lakshay Aggarwal — github.com/LakshayAggarwal12*
