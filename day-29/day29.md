@@ -40,6 +40,21 @@ operation_lifeline.html
     └── App — phase router using renderScreen() with explicit if/else
 ```
 
+## Screenshots
+
+![ss-01](./screenshots/01.png)
+
+![ss-02](./screenshots/02.png)
+
+![ss-03](./screenshots/03.png)
+
+![ss-04](./screenshots/04.png)
+
+![ss-05](./screenshots/05.png)
+
+![ss-06](./screenshots/06.png)
+
+
 ## Key Learnings
 1. **React CDN apps fail silently on render errors.** My first build used an object-literal map of `{ phase: <Component/> }`, which eagerly evaluates every JSX element on every render — including phases with `null` props. One bad prop access crashed the whole tree with zero console feedback, leaving just the dark CSS background. Fixed by switching to a `renderScreen()` function with explicit `if` conditionals that only construct the active phase's element.
 2. **Null guards are non-negotiable in multi-phase apps.** Every component that depends on async-generated state (company, crisis, questions) now has an early `if (!data) return null;` guard, since phase transitions can theoretically outrace state setting.
